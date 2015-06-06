@@ -1,0 +1,14 @@
+# ShowSkin config file
+
+# location for temporary chests that holds armors
+chestsLocation:
+  world: world_the_end
+  x: -28000000
+  y: 250
+  z: -28000000
+
+hide: true
+
+
+
+

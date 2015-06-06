@@ -1,0 +1,12 @@
+name: ShowSkin
+main: cl.netgamer.showskin.SS
+version: 1
+
+commands:
+   showskin:
+      description: show your skin by hiding your armor while not taking damage.
+      usage: "type '/showskin help' to get help"
+      aliases: [ss]
+
+# aqui tambien se configuran los permisos (ya no?)
+# no usar la letra enye

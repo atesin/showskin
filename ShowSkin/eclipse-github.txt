@@ -122,15 +122,14 @@ in github
 - go to your profile - repositories tab - new (green button)
 - yourNewRepo - clone url - ssh - COPY URL
 
-in eclipse - pkg explorer
-
-//- on git repos view: add new repo (can with yellow "+" sign) - give a name
-- myProj - rclick - team - share - git
-- repo: new (like commented step) - give a name - finish
-
 in eclipse - git repos view
 
 - yourNewRepo - expand - remotes - rclick - PASTE URI - next - (delete dir before) - finish
+
+in eclipse - pkg explorer
+
+- myProj - rclick - team - share - git
+- repo: select created repo - finish
 - config your libs and do your push
 
 -----------------------------------

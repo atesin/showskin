@@ -1,5 +1,6 @@
 package cl.netgamer.showskin;
 
+import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -34,6 +35,8 @@ public class Commands implements CommandExecutor
 		}
 		
 		Player player = (Player) sender;
+		if (player.getGameMode() == GameMode.CREATIVE)
+			return true;
 		
 		// go commands
 		

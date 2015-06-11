@@ -2,16 +2,15 @@ package cl.netgamer.showskin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Chest;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class Functions
 {
@@ -94,8 +93,6 @@ public class Functions
 		i.setContents(player.getInventory().getArmorContents());
 		player.getInventory().setArmorContents(null);
 		player.updateInventory();
-		if (ss.dressMessages)
-			player.sendMessage("§BArmor stored, Skin revealed");
 	}
 	
 	// recover armor, cover skin
@@ -109,22 +106,20 @@ public class Functions
 		player.getInventory().setArmorContents(Arrays.copyOf(i.getContents(), 4));
 		i.clear();;
 		player.updateInventory();
-		if (ss.dressMessages)
-			player.sendMessage("§BArmor retrieved, Skin covered");
 	}
 	
 	// dress or undress armor if are storing or not
 	protected void toggleArmor(Player player)
 	{
 		// check store contents
-		if (areStoringArmor(player.getName()))
+		if (hasStoredArmor(player.getName()))
 			retrieveArmor(player);
 		else
 			storeArmor(player);
 	}
 	
 	// check if player has some stored item (hopefully armor)
-	protected boolean areStoringArmor(String player)
+	protected boolean hasStoredArmor(String player)
 	{
 		Inventory i = getStore(player);
 		
@@ -133,7 +128,7 @@ public class Functions
 		List<ItemStack> l = new ArrayList<ItemStack>();
 		for (ItemStack w: i.getContents())
 		{
-			if (w == null)
+			if (w == null || w.getType() == Material.AIR)
 				continue;
 			l.add(w);
 		}
@@ -141,7 +136,74 @@ public class Functions
 		return (l.size() != 0);
 	}
 	
-	protected int armorSlot(ItemStack piece)
+	protected void checkPlayerArmor(final Player player, ItemStack armor)
+	{
+		// view player matching slot
+		final int slot = armorSlot(armor);
+		if (slot < 0)
+			return;
+		
+		// slot available?
+		ItemStack p = player.getInventory().getArmorContents()[slot];
+		if (p != null && p.getType() != Material.AIR)
+			return;
+		
+		// schedule anonymous task
+		new BukkitRunnable()
+		{
+			// task properties
+			int tleft = 10;
+
+			@Override
+			public void run()
+			{
+				// countdown and check player armor, some conditions could change
+				--tleft;
+				if (tleft < 0 || !watchPlayerArmorTask(player, slot))
+					this.cancel();
+			}
+		}.runTaskTimer(ss, 0, 1);
+	}
+	
+	/**
+	 * some conditions could had changed
+	 * @return if there is still need to watch and continue with schedule
+	 */
+	private boolean watchPlayerArmorTask(Player player, int slot)
+	{
+		// check if player is creative or has stored armor
+		if (!player.isOnline() || player.getGameMode() == GameMode.CREATIVE || !hasStoredArmor(player.getName()))
+			return true;
+		
+		// new armor equipped?
+		ItemStack piece = player.getInventory().getArmorContents()[slot];
+		if (piece == null || piece.getType() == Material.AIR)
+			return true;
+		
+		// try to pick armor or drop it
+		for (ItemStack excess: player.getInventory().addItem(piece).values())
+			player.getWorld().dropItem(player.getLocation(), excess);
+		
+		// clear armor slot and cancel schedule
+		switch (slot)
+		{
+		case 0:
+			player.getInventory().setBoots(null);
+			return false;
+		case 1:
+			player.getInventory().setLeggings(null);
+			return false;
+		case 2:
+			player.getInventory().setChestplate(null);
+			return false;
+		case 3:
+			player.getInventory().setHelmet(null);
+		}
+		return false;
+	}
+	
+	// for use with getArmorContents()
+	private int armorSlot(ItemStack piece)
 	{
 		/* 
 		 * pos = 0 feet / 1 legs / 2 chest / 3 head
@@ -154,8 +216,6 @@ public class Functions
 		
 		if (piece == null)
 			return -1;
-		
-		ss.log("name: "+piece.getData().getItemType().toString());
 		
 		switch (piece.getData().getItemType().toString())
 		{
@@ -190,7 +250,7 @@ public class Functions
 		}
 	}
 	
-	protected int wearLevel(ItemStack wear)
+	protected int armorLevel(ItemStack wear)
 	{
 		int level = 0;
 		switch (wear.getData().getItemType().toString())

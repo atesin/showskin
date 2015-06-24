@@ -4,23 +4,29 @@ import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 public class Commands implements CommandExecutor
 {
 	// PROPERTIES
 	private SS ss;
+	int equipFor;
+	boolean equipMsg;
 	
 	// CONSTRUCTOR
 	public Commands(SS ss)
 	{
 		this.ss = ss;
+		equipFor = ss.getConfig().getConfigurationSection("onCommandSent").getInt("equipFor");
+		equipMsg = ss.getConfig().getConfigurationSection("onCommandSent").getBoolean("equipMsg");
 	}
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String alias, String[] args)
 	{
 		// previous checks
+		
 		
 		if (!(cmd.getName().equalsIgnoreCase("showskin")))
 		{
@@ -43,7 +49,7 @@ public class Commands implements CommandExecutor
 		// default behavior with no args
 		if (args.length == 0)
 		{
-			ss.f.toggleArmor(player);
+			ss.func.suitToggle(player, equipFor, equipMsg);
 			return true;
 		}
 		

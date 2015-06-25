@@ -1,0 +1,23 @@
+v1 unreleased
+
+done
+
+- read/write configuration
+- player temporary chests creation (if not exists) on player join
+- store/retrieve player armor suit
+- command processing ok
+- cancel equip armor (player inventory) by click/drag ok
+- cancel equip armor by using held item ok (right click)
+- cancel equip armor by dispenser
+- armor equip for a period (schedule equip armor task)
+- damage mitigation by armor recalculed
+
+todo
+
+- equip forever when done by commands / unequip later when done by events (messed up)
+- recalcule damage mitigation my enchantmets, falling anvil, fall damage
+- armor status messages
+
+
+
+

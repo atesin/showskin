@@ -18,6 +18,7 @@ todo
 - recalcule damage mitigation my enchantmets, falling anvil, fall damage
 - armor status messages
 
+armor could not be equipped, just calculate damage mitigation
 
 
 

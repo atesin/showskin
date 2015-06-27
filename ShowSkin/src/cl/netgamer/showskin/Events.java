@@ -197,4 +197,19 @@ public class Events implements Listener
 	{
 		ss.func.suitUnequip((Player)e.getEntity(), onPlayerDeath.getBoolean("equipMsg"));
 	}
+	
+	// debug util
+	private void printModifiers(EntityDamageEvent e)
+	{
+		 // getDamage(DamageModifier type)
+		 // DamageModifier.values();
+		double d;
+		for (DamageModifier m: DamageModifier.values())
+		{
+			d = e.getDamage(m);
+			if (d == 0)
+				continue;
+			ss.log(""+m+": "+d);
+		}
+	}	
 }

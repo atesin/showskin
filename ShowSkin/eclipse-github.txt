@@ -124,7 +124,8 @@ in github
 
 in eclipse - git repos view
 
-- yourNewRepo - expand - remotes - rclick - PASTE URI - next - (delete dir before) - finish
+- yourNewRepo - expand - remotes - rclick - PASTE URI - next - (delete dir before *) - finish
+- (* (commit before) click browse - move repo dir to another location (backup) - click back + click next)
 
 in eclipse - pkg explorer
 
@@ -141,6 +142,14 @@ ROLLBACK WITH PREVIOUS COMMIT
 - (edit sources and) push
 
 WORK WITH BRANCHES
+
+------------------------------
+
+RECONECT REMOTE REPO
+
+- git view - myRepo - rclick - properties - config - remove all keys and values
+
+
 
 
 

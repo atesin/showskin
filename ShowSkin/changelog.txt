@@ -19,6 +19,6 @@ todo
 - armor status messages
 
 armor could not be equipped, just calculate damage mitigation
-
+no because has to do durability calculations (and other enchantments?)
 
 

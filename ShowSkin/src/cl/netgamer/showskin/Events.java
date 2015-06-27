@@ -168,6 +168,9 @@ public class Events implements Listener
 		if (e.getEntityType() != EntityType.PLAYER)
 			return;
 		
+		// debug
+		printModifiers(e);
+		
 		// findng: armor modifier seems always applicable, at least on players
 		
 		// find armor durability event or technique
@@ -203,13 +206,14 @@ public class Events implements Listener
 	{
 		 // getDamage(DamageModifier type)
 		 // DamageModifier.values();
+		ss.log("Damage cause: "+e.getCause());
 		double d;
 		for (DamageModifier m: DamageModifier.values())
 		{
 			d = e.getDamage(m);
 			if (d == 0)
 				continue;
-			ss.log(""+m+": "+d);
+			ss.log("- "+m+": "+d);
 		}
 	}	
 }

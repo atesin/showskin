@@ -1,9 +1,9 @@
 package cl.netgamer.showskin;
 
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import cl.netgamer.showskin.ConfigAccesor;
@@ -13,9 +13,9 @@ public class SS extends JavaPlugin
 {
 	// PROPERTIES
 	private Logger logger;
-	protected boolean autoDress;
-	protected ConfigAccesor conf;
-	protected ConfigurationSection lang;
+	protected ConfigAccesor data;
+	protected ConfigurationSection actions;
+	protected Map<String, Object> lang;
 	protected Functions func;
 	
 	// DEBUG UTILITY
@@ -29,13 +29,12 @@ public class SS extends JavaPlugin
 	{
 		logger = getLogger();
 		this.saveDefaultConfig();
-		autoDress = getConfig().getBoolean("autoDress");
-		lang = getConfig().getConfigurationSection("lang");
+		lang = getConfig().getConfigurationSection("lang").getValues(false);
 		// §B=cyan, §D=magenta, §E=yellow
 		
 		// create a star hierarchy where plugin is the center
-		conf = new ConfigAccesor(this, "data.yml");
-		conf.saveDefaultConfig();
+		data = new ConfigAccesor(this, "data.yml");
+		data.saveDefaultConfig();
 		func = new Functions(this);
 		new Events(this);
 		getCommand("showskin").setExecutor(new Commands(this));

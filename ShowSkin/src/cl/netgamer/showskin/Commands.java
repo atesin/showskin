@@ -4,7 +4,6 @@ import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 public class Commands implements CommandExecutor
@@ -14,12 +13,12 @@ public class Commands implements CommandExecutor
 	int equipFor;
 	boolean equipMsg;
 	
+	
+	
 	// CONSTRUCTOR
 	public Commands(SS ss)
 	{
 		this.ss = ss;
-		equipFor = ss.getConfig().getConfigurationSection("onCommandSent").getInt("equipFor");
-		equipMsg = ss.getConfig().getConfigurationSection("onCommandSent").getBoolean("equipMsg");
 	}
 	
 	@Override
@@ -49,7 +48,8 @@ public class Commands implements CommandExecutor
 		// default behavior with no args
 		if (args.length == 0)
 		{
-			ss.func.suitToggle(player, equipFor, equipMsg);
+			//ss.func.suitToggle(player, equipFor, equipMsg);
+			ss.func.checkDamage(player, "TOGGLE", "command");
 			return true;
 		}
 		

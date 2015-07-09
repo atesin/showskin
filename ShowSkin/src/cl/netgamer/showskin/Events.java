@@ -1,6 +1,6 @@
 package cl.netgamer.showskin;
 
-import java.util.List;
+import java.util.Map;
 
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -12,7 +12,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
@@ -64,7 +63,7 @@ public class Events implements Listener
 		// creative has a weird inventory and no armor need
 		// check if player is creative or has stored armor
 		Player player = (Player) e.getInventory().getHolder();
-		if (player.getGameMode() == GameMode.CREATIVE || !ss.func.playerStoresSuit(player.getName()))
+		if (player.getGameMode() == GameMode.CREATIVE || ss.func.suitNumPieces(player.getName()) == 0)
 			return;
 		
 		// bug: all player inventories are type CRAFTING
@@ -88,11 +87,9 @@ public class Events implements Listener
 			return;
 		}
 		
-		// revert equip attempt
-		// delete meta
+		// already saving armor suit: revert equip attempt, do default actions
 		e.setCancelled(true);
-		if (ss.autoDress)
-			ss.func.suitEquip(player, onArmorEquipped.getInt("equipFor"), onArmorEquipped.getBoolean("equipMsg"));
+		ss.func.checkDamage(player, "NO_DAMAGE", "equip");
 	}
 	
 	// when some player "uses" some held item, possible armor wearing
@@ -116,14 +113,12 @@ public class Events implements Listener
 		
 		// player is not creative nor storing armor
 		Player player = e.getPlayer();
-		if (player.getGameMode() == GameMode.CREATIVE || !ss.func.playerStoresSuit(player.getName()))
+		if (player.getGameMode() == GameMode.CREATIVE || ss.func.suitNumPieces(player.getName()) == 0)
 			return;
 		
-		// all checks ok, deny action
-		// delete meta
+		// already saving armor suit: revert equip attempt, do default actions
 		e.setCancelled(true);
-		if (ss.autoDress)
-			ss.func.suitEquip(player, onArmorEquipped.getInt("equipFor"), onArmorEquipped.getBoolean("equipMsg"));
+		ss.func.checkDamage(player, "NO_DAMAGE", "equip");
 	}
 	
 	// when some dispenser fires some item, possible armor wearing
@@ -156,11 +151,11 @@ public class Events implements Listener
 	public void onPlayerGameModeChange(PlayerGameModeChangeEvent e)
 	{
 		// only when player switching to creative mode storing armor
-		if (e.getNewGameMode() == GameMode.CREATIVE && ss.func.playerStoresSuit(e.getPlayer().getName()))
-			ss.func.suitEquip(e.getPlayer(), onCreativeMode.getInt("equipFor"), onCreativeMode.getBoolean("equipMsg"));
+		if (e.getNewGameMode() == GameMode.CREATIVE && ss.func.suitNumPieces(e.getPlayer().getName()) != 0)
+			ss.func.checkDamage(e.getPlayer(), "NO_DAMAGE", "creative");
 	}
 	
-	// listen damage events before occurs
+	// listen damage events before they occurs
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent e)
 	{
@@ -171,34 +166,14 @@ public class Events implements Listener
 		// debug
 		printModifiers(e);
 		
-		// findng: armor modifier seems always applicable, at least on players
+		// equip armor and get damage mofidifiers, if not equipped
+		Map<DamageModifier, Double> modifiers = ss.func.checkDamage((Player)e.getEntity(), e.getCause().toString(), "damage");
+		if (modifiers == null)
+			return;
 		
-		// find armor durability event or technique
-		
-		switch (e.getCause().toString())
-		{
-		case "ENTITY_ATTACK":
-		case "PROJECTILE":
-		case "FIRE":
-		case "LAVA":
-		case "CONTACT":
-		case "ENTITY_EXPLOSION":
-		case "BLOCK_EXPLOSION":
-		case "LIGHTNING":
-		case "FALLING_BLOCK":
-		case "THORNS":
-			double armorValue = ss.func.suitEquip((Player)e.getEntity(), onDamageTaken.getInt("equipFor"), onDamageTaken.getBoolean("equipMsg"));
-			if (armorValue != 0)
-				e.setDamage(DamageModifier.ARMOR,  e.getDamage()*armorValue);
-		}
-	}
-	
-	// ON PLAYER DEATH
-	// STORE ARMOR BEFORE DEAD
-	@EventHandler
-	public void onPlayerDeath(PlayerDeathEvent e)
-	{
-		ss.func.suitUnequip((Player)e.getEntity(), onPlayerDeath.getBoolean("equipMsg"));
+		// rewrite damage modifiers
+		for (DamageModifier modifier: modifiers.keySet())
+			e.setDamage(modifier, modifiers.get(modifier));
 	}
 	
 	// debug util
@@ -215,5 +190,6 @@ public class Events implements Listener
 				continue;
 			ss.log("- "+m+": "+d);
 		}
+		ss.log("- Final damage: "+e.getFinalDamage());
 	}	
 }

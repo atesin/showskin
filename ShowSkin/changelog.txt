@@ -1,4 +1,4 @@
-v1 unreleased
+v1 initial release
 
 done
 
@@ -11,14 +11,12 @@ done
 - cancel equip armor by dispenser
 - armor equip for a period (schedule equip armor task)
 - damage mitigation by armor recalculed
-
-todo
-
-- equip forever when done by commands / unequip later when done by events (messed up)
+- equip forever when done by commands
+- unequip later when done by events
 - recalcule damage mitigation my enchantmets, falling anvil, fall damage
 - armor status messages
 
-armor could not be equipped, just calculate damage mitigation
-no because has to do durability calculations (and other enchantments?)
 
+todo
 
+- detect when player is looking a right-clickable block/entity

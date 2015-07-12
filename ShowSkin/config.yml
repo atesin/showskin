@@ -1,14 +1,71 @@
-# ShowSkin config file
+# INVISIBLE ARMOR PLUGIN CONFIGURATION FILE
 
-# location for temporary chests that holds armors
+# show your skin proudly to everyone, without losing armor benefits
+# is a shame that while there are tons of cool skins you cant show it because of the armor
+# 
+# formerly "ShowSkin", this is not really an "invisible armor" plugin,
+# but a "hide armor while no damaged" plugin
+# 
+# i decided to make it because i saw some plugins that reach similar goals
+# trough protocollib, but the downside is as it does work over the network
+# you always see your armor locally and dont really know if other sees or not
+# 
+# i used to use "armorhider" plugin, but i noted now is useless because damage reductions
+# (armor, enchantments, etc.) are calculated BEFORE damage event occurs,
+# so even though your armor were timely equipped you will get full damage
+
+
+# TEMPORARY CHESTS LOCATION
+
+# hidden armors are stored in hidden chests located according world border
+# DO NOT EDIT THIS LOCATION ONCE PLAYERS USED THE PLUGIN OR COULD CAUSE ITEMS LOSS
+
 chestsLocation:
   world: world_the_end
   x: -28000000
   y: 250
   z: -28000000
 
-hide: true
+
+# ACTIONS PERFORMED BY THE PLUGIN
+
+# equip saved armor when these events are coming
+# over equip an armor and creative mode are blocked to prevent bugs
+
+# equipFor: ticks while saved armor is temporarily equipped
+#   (200 = permanently equipped, 0 = unequip and save immediately)
+# equipMsg: if displays chat messages when save and equip armor suit
+# statusMsg: if displays chat messages on armor status changes
+
+actions:
+  # when type "/showskin" command or alias
+  command:
+    equipFor: 200
+    equipMsg: true
+    statusMsg: false
+  # when get injuried and armor can absorb some damage
+  damage:
+    equipFor: 10
+    equipMsg: false
+    statusMsg: true
+  # when try to over equip an armor with your mouse
+  equip:
+    equipFor: 200
+    equipMsg: true
+    statusMsg: false
+  # when try to over equip an armor with a dispenser
+  dispense:
+    equipFor: 0
+    equipMsg: false
+    statusMsg: false
 
 
+# LOCALIZED TEXTS
 
-
+lang:
+  saveArmor: armor hidden
+  equipArmor: armor restored
+  pieceNames: [boots,leggings,chestplate,helmet]
+  pieceTitles: [are,are,is,is]
+  statusLines: [you have no %1$s,your %1$s %2$s about to die,your %1$s %2$s half broken]
+  armorStatus: you have %1$s/20 armor points

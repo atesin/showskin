@@ -17,6 +17,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 public class Events implements Listener
 {
@@ -46,13 +47,13 @@ public class Events implements Listener
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e)
 	{
-		ss.func.playerLoadConf(e.getPlayer());
+		ss.func.loadPlayerData(e.getPlayer());
 	}
 	
 	// there is no inventory events, so to detect armor equip must listen:
 	// InventoryClickEvent, PlayerInteractEvent (right click held armor), BlockDispenseEvent
 	
-	// when some player change contents by clicking on some inventory slot, possible armor wearing
+	// WHEN A PLAYER MODIFY HIS INVENTORY BY CLICKING IT, POSSIBLE ARMOR EQUIP ATTEMPT
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent e)
 	{
@@ -75,12 +76,12 @@ public class Events implements Listener
 			// player shift clicked an armor item (except pumpkin or mob head)
 			if (e.getClick().isShiftClick())
 				// check item wear level
-				if (ss.func.getArmorLevel(e.getCurrentItem()) == 1)
+				if (ss.func.getItemWearability(e.getCurrentItem()) == 1)
 					break;
 			return;
 		case "ARMOR":
 			// check cursor item wear level
-			if (ss.func.getArmorLevel(e.getCursor()) > 0)
+			if (ss.func.getItemWearability(e.getCursor()) > 0)
 				break;
 		default:
 			// you cant craft armor in player crafting inventory, doesnt fit
@@ -89,39 +90,44 @@ public class Events implements Listener
 		
 		// already saving armor suit: revert equip attempt, do default actions
 		e.setCancelled(true);
-		ss.func.checkDamage(player, "NO_DAMAGE", "equip");
+		player.updateInventory();
+		ss.func.checkEquipArmor(player, "FORCE", "equip");
 	}
 	
-	// when some player "uses" some held item, possible armor wearing
+	// WHEN A PLAYER "USES" SOME HELD ITEM, POSSIBLE ARMOR WEARING ATTEMPT
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent e)
 	{
-		// player did not right click
+		// continue event if: no right click
 		if (e.getAction() != Action.RIGHT_CLICK_AIR && e.getAction() != Action.RIGHT_CLICK_BLOCK)
 			return;
 		
-		// player is not holding an item
+		// not holding an item
 		if (!e.hasItem()) 
 			return;
 		
-		// item is not wearable by shift click (armor)
-		if (ss.func.getArmorLevel(e.getItem()) != 1)
+		// item is not wearable by shift click (is not an armor)
+		if (ss.func.getItemWearability(e.getItem()) != 1)
 			return;
 		
-		// is more complicated, if player is in front of a block/entity
-		// where items can be placed, if have space, etc
+		// pending: if player is in front of a block/entity that can be right clicked
 		
-		// player is not creative nor storing armor
+		// is in creative mode
 		Player player = e.getPlayer();
-		if (player.getGameMode() == GameMode.CREATIVE || ss.func.suitNumPieces(player.getName()) == 0)
+		if (player.getGameMode() == GameMode.CREATIVE)
 			return;
 		
-		// already saving armor suit: revert equip attempt, do default actions
+		// has no saved armor
+		if (ss.func.suitNumPieces(player.getName()) == 0)
+			return;
+		
+		// revert equip attempt, reflect inventory no-changes, do default actions
 		e.setCancelled(true);
-		ss.func.checkDamage(player, "NO_DAMAGE", "equip");
+		player.updateInventory();
+		ss.func.checkEquipArmor(player, "FORCE", "equip");
 	}
 	
-	// when some dispenser fires some item, possible armor wearing
+	// WHEN SOME DISPENSER FIRES SOME ITEM, POSSIBLE ARMOR EQUIP ATTEMPT WITH A DISPENSER
 	@EventHandler
 	public void onBlockDispense(BlockDispenseEvent e)
 	{
@@ -134,7 +140,7 @@ public class Events implements Listener
 		 */
 		
 		// is armor item?
-		if (ss.func.getArmorLevel(e.getItem()) != 1)
+		if (ss.func.getItemWearability(e.getItem()) != 1)
 			return;
 		
 		// find and watch nerby players
@@ -146,16 +152,16 @@ public class Events implements Listener
 		}
 	}
 	
-	// should recover armor on creative because weird inventory behavior
+	// BLOCK PLUGIN ON CREATIVE MODE TO PREVENT INVENTORY PROBLEMS (NO NEEDED ON CREATIVE ANYWAY)
 	@EventHandler
 	public void onPlayerGameModeChange(PlayerGameModeChangeEvent e)
 	{
 		// only when player switching to creative mode storing armor
-		if (e.getNewGameMode() == GameMode.CREATIVE && ss.func.suitNumPieces(e.getPlayer().getName()) != 0)
-			ss.func.checkDamage(e.getPlayer(), "NO_DAMAGE", "creative");
+		if (e.getNewGameMode() == GameMode.CREATIVE)
+			ss.func.checkEquipArmor(e.getPlayer(), "FORCE", "creative");
 	}
 	
-	// listen damage events before they occurs
+	// WATCH DAMAGE EVENTS BEFORE THEY OCCURS
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent e)
 	{
@@ -163,24 +169,24 @@ public class Events implements Listener
 		if (e.getEntityType() != EntityType.PLAYER)
 			return;
 		
-		// debug
-		printModifiers(e);
-		
 		// equip armor and get damage mofidifiers, if not equipped
-		Map<DamageModifier, Double> modifiers = ss.func.checkDamage((Player)e.getEntity(), e.getCause().toString(), "damage");
-		if (modifiers == null)
-			return;
+		Map<DamageModifier, Double> modifiers = ss.func.checkEquipArmor((Player)e.getEntity(), e.getCause().toString(), "damage");
 		
 		// rewrite damage modifiers
 		for (DamageModifier modifier: modifiers.keySet())
-			e.setDamage(modifier, modifiers.get(modifier));
+			e.setDamage(modifier, e.getDamage()*modifiers.get(modifier));
 	}
 	
-	// debug util
-	private void printModifiers(EntityDamageEvent e)
+	// CLEAR PLAYER DATA ON LOGOUT TO PREVENT MEMORY LEAKS
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent e)
 	{
-		 // getDamage(DamageModifier type)
-		 // DamageModifier.values();
+		ss.func.clearPlayer(e.getPlayer().getName());
+	}
+	
+	// ARMOR REDUCTIONS DEBUG UTILITY
+	/* private void printModifiers(EntityDamageEvent e)
+	{
 		ss.log("Damage cause: "+e.getCause());
 		double d;
 		for (DamageModifier m: DamageModifier.values())
@@ -191,5 +197,5 @@ public class Events implements Listener
 			ss.log("- "+m+": "+d);
 		}
 		ss.log("- Final damage: "+e.getFinalDamage());
-	}	
+	} */
 }

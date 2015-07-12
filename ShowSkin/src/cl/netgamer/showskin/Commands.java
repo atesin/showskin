@@ -21,11 +21,12 @@ public class Commands implements CommandExecutor
 		this.ss = ss;
 	}
 	
+	// ugly but works
+	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String alias, String[] args)
 	{
 		// previous checks
-		
 		
 		if (!(cmd.getName().equalsIgnoreCase("showskin")))
 		{
@@ -49,14 +50,10 @@ public class Commands implements CommandExecutor
 		if (args.length == 0)
 		{
 			//ss.func.suitToggle(player, equipFor, equipMsg);
-			ss.func.checkDamage(player, "TOGGLE", "command");
+			//ss.func.checkDamage(player, "TOGGLE", "command");
+			ss.func.toggleArmor(player, "command");
 			return true;
 		}
-		
-		
-		
-		
-		
 		return true;
 	}
 }

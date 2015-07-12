@@ -23,47 +23,44 @@ public class Functions
 	// PROPERTIES
 	private SS ss;
 	private Location chestsLocation;
-	//private Map<String, Map<String, Object>> actions;
 	private List<String> players;
-	// was too complicated to use the same
-	private Map<String, BukkitTask> tasks;
-	private Map<String, double[]> epfs;
+	private Map<String, BukkitTask> tasks = new HashMap<String, BukkitTask>();
+	private Map<String, int[]> armorStatus = new HashMap<String, int[]>();
+	private Map<String, double[]> epfs = new HashMap<String, double[]>();
+	// §B=cyan, §E=yellow, §D=magenta
+	String[] colors = new String[]{"§D", "§E", "§B"};
+	String[] pieceNames;
+	String[] pieceTitles;
+	String[] statusLines;
 
 	
 	// CONSTRUCTOR
 	public Functions(SS ss)
 	{
 		this.ss = ss;
-		
 		chestsLocation = new Location
 		(
-			ss.getServer().getWorld(ss.getConfig().getConfigurationSection("chestsLocation").getString("world")),
-			ss.getConfig().getConfigurationSection("chestsLocation").getDouble("x"),
-			ss.getConfig().getConfigurationSection("chestsLocation").getDouble("y"),
-			ss.getConfig().getConfigurationSection("chestsLocation").getDouble("z")
+			ss.getServer().getWorld(ss.getConfig().getString("chestsLocation.world")),
+			ss.getConfig().getDouble("chestsLocation.x"),
+			ss.getConfig().getDouble("chestsLocation.y"),
+			ss.getConfig().getDouble("chestsLocation.z")
 		);
-		
-		/* actions = new HashMap<String, Map<String, Object>>();
-		actions.put("command",  ss.getConfig().getConfigurationSection("actions.command").getValues(false));
-		actions.put("damage",   ss.getConfig().getConfigurationSection("actions.damage").getValues(false));
-		actions.put("equip",    ss.getConfig().getConfigurationSection("actions.equip").getValues(false));
-		actions.put("dispense", ss.getConfig().getConfigurationSection("actions.dispense").getValues(false));
-		actions.put("creative", ss.getConfig().getConfigurationSection("actions.creative").getValues(false)); */
-		
 		players = ss.data.getConfig().getStringList("players");
-		tasks = new HashMap<String, BukkitTask>();
-		epfs = new HashMap<String, double[]>();
 		epfs.put("PROTECTION_ENVIRONMENTAL", new double[]{0.04, 0.08, 0.12, 0.20});
 		epfs.put("PROTECTION_FIRE",          new double[]{0.08, 0.16, 0.24, 0.36});
 		epfs.put("PROTECTION_EXPLOSIONS",    new double[]{0.12, 0.20, 0.28, 0.44});
 		epfs.put("PROTECTION_PROJECTILE",    new double[]{0.12, 0.20, 0.28, 0.44});
 		epfs.put("PROTECTION_FALL",          new double[]{0.20, 0.32, 0.48, 0.72});
+		String[] s = new String[0];
+		pieceNames = ss.getConfig().getStringList("lang.pieceNames").toArray(s);
+		pieceTitles = ss.getConfig().getStringList("lang.pieceTitles").toArray(s);
+		statusLines = ss.getConfig().getStringList("lang.statusLines").toArray(s);
 	}
 	
 	// FUNCTIONS
 	
-	// on player join load player config or create if not exist
-	protected void playerLoadConf(Player player)
+	// CREATE NEW PLAYER CONFIGURATION ON LOGIN
+	protected void loadPlayerData(Player player)
 	{
 		// load player config or create it
 		String name = player.getName();
@@ -83,7 +80,7 @@ public class Functions
 			tasks.put(player.getName(), null);
 	}
 	
-	// on load config create chests
+	// CREATE PLAYER TEMP CHEST
 	private void chestCreate(Player player)
 	{
 		// get player position in config first
@@ -91,124 +88,15 @@ public class Functions
 		chestsLocation.clone().add(pos+pos, 0, 0).getBlock().setType(Material.CHEST);
 	}
 	
+	// GET PLAYER TEMP CHEST
 	// get player temp chest inventory already created
-	private Inventory chestGetInventory(String player)
+	private Inventory getTempInventory(String player)
 	{
 		int pos = players.indexOf(player);
 		return ((Chest)chestsLocation.clone().add(pos*2, 0, 0).getBlock().getState()).getInventory();
 	}
 	
-	/* // keep armor, reveal skin
-	// temp chest must be previously empty
-	protected void suitUnequip(Player player, boolean message)
-	{
-		// clean task that triggered this action
-		tasks.put(player.getName(), null);
-		
-		// avoid overwrites: dont save suit if already are saving one
-		if (playerStoresSuit(player.getName()))
-			return;
-		
-		// undress player and stores suit
-		chestGetInventory(player.getName()).setContents(player.getInventory().getArmorContents());
-		player.getInventory().setArmorContents(null);
-		player.updateInventory();
-		
-		// display message?
-		if (message)
-			player.sendMessage("§E"+getMsg("skinShown"));
-	} */
-	
-	/* private void suitUnequipLater(final Player player, int equipFor, final boolean message)
-	{
-		// update unequip suit task (tasks entry was created before)
-		if (tasks.get(player.getName()) != null)
-			tasks.get(player.getName()).cancel();
-		
-		// creating a new and updated task
-		BukkitTask task = new BukkitRunnable()
-		{
-			@Override
-			public void run()
-			{
-				suitUnequip(player, message);
-			}
-		}.runTaskLater(ss, equipFor);
-		
-		// store new task to get accessible
-		tasks.put(player.getName(), task);
-	} */
-	
-	
-	/* // recover armor, cover skin
-	// player cannot be wearing armor
-	protected double suitEquip(Player player, int equipFor, boolean message)
-	{
-		// equip suit for 0 ticks = unequip immediately
-		if (equipFor <= 0)
-		{
-			suitUnequip(player, message);
-			return 0;
-		}
-		
-		// equip suit temporarily?, equip suit now and forever?, not storing scheduled?
-		String name = player.getName();
-		if (equipFor < 200 && tasks.get(name) != null)
-			suitUnequipLater(player, equipFor, message);
-		
-		// no stored suit means player is wearing it, avoid overwrite
-		if (!playerStoresSuit(name))
-			return 0;
-		
-		// dress player with chest inventory, this relies on previous checks
-		Inventory inv = chestGetInventory(name);
-		ItemStack[] suit = Arrays.copyOf(inv.getContents(), 4);
-		player.getInventory().setArmorContents(suit);
-		inv.clear();
-		player.updateInventory();
-		
-		// display message?
-		if (message)
-			player.sendMessage("§E"+ss.lang.getString("skinCovered"));
-		
-		return suitArmorValue(suit);
-	} */
-	
-	/* // dress or undress armor if are storing or not
-	protected void suitToggle(Player player, int equipFor, boolean message)
-	{
-		// create unequip task entry if not exists
-		String name = player.getName();
-		if (!tasks.containsKey(name))
-			tasks.put(name, null);
-		
-		// check chest contents before
-		//if (playerStoresSuit(player.getName()))
-		if (tasks.get(name) == null && !playerStoresSuit(name))
-			suitUnequip(player, message);
-		else
-			suitEquip(player, equipFor, message);
-	} */
-	
-	/* // check if player has some stored item (hopefully armor)
-	protected boolean playerStoresSuit(String player)
-	{
-		Inventory i = chestGetInventory(player);
-		
-		// count inventory items
-		int l = 0;
-		ItemStack[] c = i.getContents();
-		for (int k = 0;k < 4;++k)
-		{
-			if (c[k] == null || c[k].getType() == Material.AIR)
-				continue;
-			++l;
-		}
-		
-		return (l != 0);
-	} */
-	
-	// check armor slots, for use with dispenser event
+	// CHECK PLAYER ARMOR SLOTS AT INTERVALS, FOR USE WITH DISPENSER EVENTS
 	protected void armorCheck(final Player player, ItemStack armor)
 	{
 		// view player matching slot
@@ -238,10 +126,7 @@ public class Functions
 		}.runTaskTimer(ss, 0, 1);
 	}
 	
-	/**
-	 * interval armor slots watch, some conditions could had changed, for use with dispenser event
-	 * @return if there is still need to watch and continue with schedule
-	 */
+	// CHECK PLAYER ARMOR SLOTS TASK, FOR USE WITH DISPENSER EVENTS
 	private boolean armorWatchTask(Player player, int slot)
 	{
 		// check if player is still online and no in creative mode
@@ -279,7 +164,7 @@ public class Functions
 		return false;
 	}
 	
-	// returns armor piece matching position
+	// GET ARMOR SLOT POSITION
 	private int getArmorSlot(ItemStack piece)
 	{
 		// 0 = feet, 1 = legs, 2 = chest, 3 = head, -1 = unwearable
@@ -319,8 +204,8 @@ public class Functions
 		}
 	}
 	
-	// returns "wearability" of an item
-	protected int getArmorLevel(ItemStack wear)
+	// GET ITEM WEARABILITY (0: UNWEARABLE, 1: ARMOR PIECE, 2: MOB HEAD)
+	protected int getItemWearability(ItemStack wear)
 	{
 		int level = 0;
 		switch (wear.getData().getItemType().toString())
@@ -355,8 +240,8 @@ public class Functions
 		return level;
 	}
 	
-	// returns armor value factor of given armor suit
-	private double suitArmorValue(ItemStack[] suit)
+	// GET ARMOR VALUE OF GIVEN ARMOR SUIT
+	private double getArmorReduction(ItemStack[] suit)
 	{
 		if (suit == null)
 			return 0;
@@ -403,13 +288,15 @@ public class Functions
 		return value;
 	}
 	
+	// GET NUMBER OF ARMOR PIECES THE PLAYER HAS SAVED
 	protected int suitNumPieces(String playerName)
 	{
 		// get saved armor suit and its number of pieces
-		ItemStack[] suit = Arrays.copyOf(chestGetInventory(playerName).getContents(), 4);
+		ItemStack[] suit = Arrays.copyOf(getTempInventory(playerName).getContents(), 4);
 		return suitNumPieces(suit);
 	}
 	
+	// GET NUMBER OF ARMOR PIECES OF GIVEN ARMOR SUIT
 	private int suitNumPieces(ItemStack[] suit)
 	{
 		int numPieces = 0;
@@ -419,26 +306,25 @@ public class Functions
 		return numPieces;
 	}
 	
-	private double getEnchantMitigation(String ench, List<Integer> levels)
+	// GET PROTECTION ENCHANTMENTS DAMAGE REDUCTION VALUE
+	private double getMagicReduction(String ench, List<Integer> levels)
 	{
-		double epf = 0;
+		double epf = 0.00;
 		for (int level: levels)
-		{
-			// debug
-			ss.log("enchant: "+ench+": "+levels);
 			epf -= epfs.get(ench)[level-1];
-		}
 		
 		// http://minecraft.gamepedia.com/Armor#Enchantments
 		epf = Math.min(epf, 1.00)*Math.random()*0.50 + 0.50;
 		return Math.min(epf, 0.80);
 	}
 	
-	private void saveArmorLater2(final Player player, final Map<String, Object> set)
+	// SCHEDULE UNEQUIP AND SAVE CURRENT ARMOR SUIT
+	private void saveArmorLater(final Player player, final Map<String, Object> act)
 	{
-		// update unequip suit task (tasks entry was created before)
-		if (tasks.get(player.getName()) != null)
-			tasks.get(player.getName()).cancel();
+		// update save armor task
+		if (tasks.containsKey(player.getName()))
+			if (tasks.get(player.getName()) != null)
+				tasks.get(player.getName()).cancel();
 		
 		// create a new and updated task
 		BukkitTask task = new BukkitRunnable()
@@ -446,71 +332,94 @@ public class Functions
 			@Override
 			public void run()
 			{
-				// saveArmor2(Player player, Map<String, Object> set)
-				saveArmor2(player, set);
+				saveArmor(player, act);
 			}
-		}.runTaskLater(ss, (int)set.get("equipFor"));
+		}.runTaskLater(ss, (int)act.get("equipFor"));
 		
 		// store the new task to get accessible
 		tasks.put(player.getName(), task);
 	}
 	
-	private void saveArmor2(Player player, Map<String, Object> set)
+	// SAVE ARMOR NOW, REMEMBER COULD BE ASYNCRONOUS
+	private void saveArmor(Player player, Map<String, Object> act)
 	{
-		// clean task already trigged this action
-		tasks.put(player.getName(), null);
-
+		// clean task that triggered this action if possible
+		if (tasks.containsKey(player.getName()))
+			if (tasks.get(player.getName()) != null)
+				tasks.get(player.getName()).cancel();
+		tasks.remove(player.getName());
+				
 		// get saved armor suit and its number of pieces
 		// avoid overwrites: dont save suit if already are saving one (remember could be asynchronous)
-		if (suitNumPieces(player.getName()) != 0)
+		int numPieces = suitNumPieces(player.getName());
+		if (numPieces != 0)
 			return;
 		
 		// unequip armor suit and save it
-		chestGetInventory(player.getName()).setContents(player.getInventory().getArmorContents());
+		ItemStack[] suit = player.getInventory().getArmorContents();
+		getTempInventory(player.getName()).setContents(suit);
 		player.getInventory().setArmorContents(null);
 		player.updateInventory();
 
 		// display unequip message?
-		if ((boolean)set.get("equipMsg"))
-			player.sendMessage("§E"+getMsg("saveArmor"));
+		if ((boolean)act.get("equipMsg"))
+			player.sendMessage("§B"+ss.getConfig().getString("lang.saveArmor"));
+		
+		// display status messages
+		if ((boolean)act.get("statusMsg"))
+			printStatus(player, suit);
 	}
 	
-	// when comes some damage/equip/command event
-	protected Map<DamageModifier, Double> checkDamage(Player player, String cause, String action)
+	// TOGGLE ARMOR EQUIP, TRIGGERED BY COMMAND SO NO REAL DAMAGE
+	protected void toggleArmor(Player player, String action)
 	{
-		// get action settings
-		Map<String, Object> set = ss.getConfig().getConfigurationSection("actions."+action).getValues(false);
-
-		// get saved armor suit and its number of pieces
-		ItemStack[] suit = Arrays.copyOf(chestGetInventory(player.getName()).getContents(), 4);
+		// get suit and number of pieces fisrt to pass ahead
+		ItemStack[] suit = Arrays.copyOf(getTempInventory(player.getName()).getContents(), 4);
 		int numPieces = suitNumPieces(suit);
 		
-		// debug
-		ss.log("saved suit: "+suit);
-		
-		// manage toggle armor equip, explicit so no damage taken
-		// if armor equipped save it now, if saved equip it
-		if (cause.equals("TOGGLE") && numPieces == 0)
-		{
-			saveArmor2(player, set);
-			return null;
-		}
+		// save armor only when equipped permanently
+		if (numPieces == 0 && !tasks.containsKey(player.getName()))
+			saveArmor(player, ss.getConfig().getConfigurationSection("actions."+action).getValues(false));
+		else
+			checkEquipArmor(player, "FORCE", action);
+	}
+	
+	// PROCESS EQUIP SAVED ARMOR REQUEST
+	protected Map<DamageModifier, Double> checkEquipArmor(Player player, String cause, String action)
+	{
+		// fix suit if null
+		ItemStack[] suit = Arrays.copyOf(getTempInventory(player.getName()).getContents(), 4);
+		return checkEquipArmor(player, cause, action, suit);
+	}
+	
+	// PROCESS EQUIP SAVED ARMOR REQUEST
+	protected Map<DamageModifier, Double> checkEquipArmor(Player player, String cause, String action, ItemStack[] suit)
+	{
+		// get action settings
+		Map<String, Object> act = ss.getConfig().getConfigurationSection("actions."+action).getValues(false);
+
+		// get saved armor suit pieces number
+		int numPieces = suitNumPieces(suit);
 		
 		// prepare damage reductions for return
 		Map<DamageModifier, Double> reductions = new HashMap<DamageModifier, Double>();
 		
-		// player are wearing suit permanently: do nothing
+		// debug
+		//ss.log("> number pieces: "+numPieces);
+		//ss.log("> task contains: "+tasks.containsKey(player.getName()));
+		
+		// if equipped permanently do nothing
 		if (numPieces == 0 && !tasks.containsKey(player.getName()))
 			return reductions;
 		
-		// if player saved a suit and got damage: equip armor with no reductions
-		if (numPieces == 0 || cause.equals("TOGGLE") || cause.equals("NO_DAMAGE"))
+		// equip armor suit for 0 ticks = unequip now
+		if ((int)act.get("equipFor") <= 0)
+		{
+			saveArmor(player, act);
 			return reductions;
-		
-		// equip armor suit for 0 ticks = do nothing
-		if ((int)set.get("equipFor") <= 0)
-			return reductions;
-		
+		}
+		//ss.log("+ do wear");
+
 		// calculate armor damage reduction
 		double armorValue = 0.00;
 		switch (cause)
@@ -526,7 +435,7 @@ public class Functions
 		case "LIGHTNING":
 		case "FALLING_BLOCK":
 		case "THORNS":
-			armorValue = suitArmorValue(player.getInventory().getArmorContents());
+			armorValue = getArmorReduction(suit);
 			if (armorValue != 0.00)
 				reductions.put(DamageModifier.ARMOR, armorValue);
 		}
@@ -536,37 +445,32 @@ public class Functions
 		double magicValue = 0.00;
 		for (Enchantment ench: enchants.keySet())
 		{
-			switch (ench.toString())
+			switch (ench.getName())
 			{
 			case "PROTECTION_ENVIRONMENTAL":
 				// protection, doesn't reduce damage from the Void, the /kill command, and hunger damage.
-				if (cause.equals("STARVATION") || cause.equals("SUICIDE") || cause.equals("VOID"))
-					continue;
-				magicValue -= getEnchantMitigation(ench.toString(), enchants.get(ench));
+				if (!cause.equals("STARVATION") && !cause.equals("SUICIDE") && !cause.equals("VOID") && !cause.equals("FORCE"))
+					magicValue -= getMagicReduction(ench.getName(), enchants.get(ench));
 				continue;
 			case "PROTECTION_FIRE":
 				// fire protection against lava contact, fire contact and burning
-				if (!cause.equals("LAVA") && !cause.equals("FIRE") && !cause.equals("FIRE_TICK"))
-					continue;
-				magicValue -= getEnchantMitigation(ench.toString(), enchants.get(ench));
+				if (cause.equals("LAVA") || cause.equals("FIRE") || cause.equals("FIRE_TICK"))
+					magicValue -= getMagicReduction(ench.toString(), enchants.get(ench));
 				continue;
 			case "PROTECTION_EXPLOSIONS":
 				// blast protection 
-				if (!cause.equals("ENTITY_EXPLOSION") && !cause.equals("BLOCK_EXPLOSION"))
-					continue;
-				magicValue -= getEnchantMitigation(ench.toString(), enchants.get(ench));
+				if (cause.equals("ENTITY_EXPLOSION") || cause.equals("BLOCK_EXPLOSION"))
+					magicValue -= getMagicReduction(ench.toString(), enchants.get(ench));
 				continue;
 			case "PROTECTION_PROJECTILE":
 				// projectile protection against arrows, fireballs, snowballs, eggs, wither skulls, etc
-				if (!cause.equals("PROJECTILE"))
-					continue;
-				magicValue -= getEnchantMitigation(ench.toString(), enchants.get(ench));
+				if (cause.equals("PROJECTILE"))
+					magicValue -= getMagicReduction(ench.toString(), enchants.get(ench));
 				continue;
 			case "PROTECTION_FALL":
 				// feather falling, protection against falling from height and ender pearls burning
-				if (!cause.equals("FALL"))
-					continue;
-				magicValue -= getEnchantMitigation(ench.toString(), enchants.get(ench));
+				if (cause.equals("FALL"))
+					magicValue -= getMagicReduction(ench.toString(), enchants.get(ench));
 				continue;
 			}
 		}
@@ -582,53 +486,108 @@ public class Functions
 		}
 		
 		// equipping armor suit is worth if there is some reduction
-		if (armorValue != 0.00 || magicValue != 0.00)
+		if (armorValue != 0.00 || magicValue != 0.00 || cause.equals("FORCE"))
 		{
-			// equip suit now
-			player.getInventory().setArmorContents(suit);
-			chestGetInventory(player.getName()).clear();
-			player.updateInventory();
+			// equip suit now just if saving to avoid loss of equipped armor
+			if (numPieces != 0)
+			{
+				// armor status already saved, avoid calculate twice
+				// equip saved armor
+				player.getInventory().setArmorContents(suit);
+				getTempInventory(player.getName()).clear();
+				player.updateInventory();
+				
+				// display equip message if worths
+				if ((boolean)act.get("equipMsg"))
+					player.sendMessage("§B"+ss.getConfig().getString("lang.equipArmor"));
+			}
+		}
 			
-			// equip it temporarily?
-			if ((int)set.get("equipFor") < 200 && tasks.get(player.getName()) != null)
-				saveArmorLater2(player, set);
-			
-			// display equip message if corresponds
-			if ((boolean)set.get("equipMsg"))
-				player.sendMessage("§E"+getMsg("saveArmor"));
+		// equipped armor temporarily (update task) or permanently (cancel task)
+		if ((int)act.get("equipFor") < 200)
+			saveArmorLater(player, act);
+		else if (tasks.containsKey(player.getName()))
+		{
+			if (tasks.get(player.getName()) != null)
+				tasks.get(player.getName()).cancel();
+			tasks.remove(player.getName());
+			armorStatus.remove(player.getName());
 		}
 			
 		// all done
 		return reductions;
 	}
 	
-	private String getMsg(String key)
-	{
-		String msg = ss.getConfig().getString("lang."+key);
-		if (msg == null)
-			return key;
-		else
-			return msg;
-	}
-	
+	// GET FULL SUIT ENCHANTMENTS
 	private Map<Enchantment, List<Integer>> getSuitEnchants(ItemStack[] suit)
 	{
 		// a map with multiple values, like multimap
 		Map<Enchantment, List<Integer>> enchants = new HashMap<Enchantment, List<Integer>>();
 		for (ItemStack piece: suit)
 		{
-			// could be replaced?
-			for (Enchantment ench: piece.getEnchantments().keySet())
+			// prevent iteration exceptions
+			if (piece != null)
 			{
-				// debug
-				ss.log("Enchant name: "+ench.getName());
-				ss.log("Enchant string: "+ench.toString());
-				
-				if (!enchants.containsKey(ench))
-					enchants.put(ench, new ArrayList<Integer>());
-				enchants.get(ench).add(piece.getEnchantmentLevel(ench));
+				for (Enchantment ench: piece.getEnchantments().keySet())
+				{
+					if (!enchants.containsKey(ench))
+						enchants.put(ench, new ArrayList<Integer>());
+					enchants.get(ench).add(piece.getEnchantmentLevel(ench));
+				}
 			}
 		}
 		return enchants;
+	}
+	
+	// PRINT ARMOR STATUS ON PLAYER CHAT AREA
+	private void printStatus(Player player, ItemStack[] suit)
+	{
+		// get saved old armor status if available
+		if (!armorStatus.containsKey(player.getName()))
+			armorStatus.put(player.getName(), new int[]{3, 3, 3, 3});
+		int[] status = armorStatus.get(player.getName());
+		
+		// loop armor suit pieces
+		int old;
+		float dur;
+		int sta;
+		for (int slot = 0; slot < suit.length; ++slot)
+		{
+			// get piece durability
+			ItemStack piece = suit[slot];
+			old = status[slot];
+			if (piece == null || piece.getType() == Material.AIR)
+				dur = 0.0f;
+			else
+				dur = (float)(piece.getDurability()) / (float)(piece.getType().getMaxDurability());
+			
+			// status level
+			sta = dur == 1.0 ? 0 : dur >= 0.8 ? 1 : dur >= 0.5 ? 2 : 3;
+			
+			// catch changes in armor piece durability
+			if (old > sta)
+			{
+				// correct armor values if piece is destroyed
+				if (sta == 0)
+					suit[slot] = null;
+				int armorPoints = (int)(getArmorReduction(suit) * -25);
+				int col = armorPoints <= 4 ? 0 : armorPoints <= 10 ? 1 : 2;
+				
+				// send info to player
+				player.sendMessage(
+					colors[sta]+String.format(statusLines[sta], pieceNames[slot], pieceTitles[slot])+", "+
+					colors[col]+String.format(ss.getConfig().getString("lang.armorStatus"), armorPoints)
+				);
+			}
+			// save old level for later use
+			status[slot] = sta;
+		}
+	}
+	
+	// CLEAR PLAYER DATA ON LOGOUT TO PREVENT MEMORY LEAKS
+	protected void clearPlayer(String name)
+	{
+		armorStatus.remove(name);
+		tasks.remove(name);
 	}
 }

@@ -1,6 +1,6 @@
 package cl.netgamer.showskin;
 
-//import java.util.logging.Logger;
+import java.util.logging.Logger;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -11,16 +11,16 @@ import cl.netgamer.showskin.Commands;
 public class SS extends JavaPlugin
 {
 	// PROPERTIES
-	//private Logger logger = getLogger();
+	private Logger logger = getLogger();
 	protected ConfigAccesor data;
 	protected ConfigurationSection actions;
 	protected Functions func;
 	
 	// DEBUG UTILITY
-	/* protected void log(String msg)
+	protected void log(String msg)
 	{
 		logger.info(msg);
-	} */
+	}
 
 	// ENABLER
 	public void onEnable()

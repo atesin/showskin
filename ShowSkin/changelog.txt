@@ -1,3 +1,7 @@
+v2
+
+- enchanting levels bugfix
+
 v1 initial release
 
 done

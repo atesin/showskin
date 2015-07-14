@@ -313,13 +313,13 @@ public class Functions
 	// GET PROTECTION ENCHANTMENTS DAMAGE REDUCTION VALUE
 	private double getMagicReduction(String ench, List<Integer> levels)
 	{
-		double epf = 0.00;
+		double epf = 0.0;
 		for (int level: levels)
 			epf -= epfs.get(ench)[level-1];
 		
 		// http://minecraft.gamepedia.com/Armor#Enchantments
-		epf = Math.min(epf, 1.00)*Math.random()*0.50 + 0.50;
-		return Math.min(epf, 0.80);
+		epf = Math.min(epf, 1.0)*Math.random()*0.5 + 0.5;
+		return Math.min(epf, 0.8);
 	}
 	
 	// SCHEDULE UNEQUIP AND SAVE CURRENT ARMOR SUIT
@@ -459,22 +459,22 @@ public class Functions
 			case "PROTECTION_FIRE":
 				// fire protection against lava contact, fire contact and burning
 				if (cause.equals("LAVA") || cause.equals("FIRE") || cause.equals("FIRE_TICK"))
-					magicValue -= getMagicReduction(ench.toString(), enchants.get(ench));
+					magicValue -= getMagicReduction(ench.getName(), enchants.get(ench));
 				continue;
 			case "PROTECTION_EXPLOSIONS":
 				// blast protection 
 				if (cause.equals("ENTITY_EXPLOSION") || cause.equals("BLOCK_EXPLOSION"))
-					magicValue -= getMagicReduction(ench.toString(), enchants.get(ench));
+					magicValue -= getMagicReduction(ench.getName(), enchants.get(ench));
 				continue;
 			case "PROTECTION_PROJECTILE":
 				// projectile protection against arrows, fireballs, snowballs, eggs, wither skulls, etc
 				if (cause.equals("PROJECTILE"))
-					magicValue -= getMagicReduction(ench.toString(), enchants.get(ench));
+					magicValue -= getMagicReduction(ench.getName(), enchants.get(ench));
 				continue;
 			case "PROTECTION_FALL":
 				// feather falling, protection against falling from height and ender pearls burning
 				if (cause.equals("FALL"))
-					magicValue -= getMagicReduction(ench.toString(), enchants.get(ench));
+					magicValue -= getMagicReduction(ench.getName(), enchants.get(ench));
 				continue;
 			}
 		}

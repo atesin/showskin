@@ -13,6 +13,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -23,22 +24,12 @@ public class Events implements Listener
 {
 	// PROPERTIES
 	private SS ss;
-	ConfigurationSection onArmorEquipped;
-	ConfigurationSection onArmorDispensed;
-	ConfigurationSection onCreativeMode;
-	ConfigurationSection onDamageTaken;
-	ConfigurationSection onPlayerDeath;
 	
 	// CONSTRUCTOR
 	Events(SS ss)
 	{
-		this.ss = ss;
 		ss.getServer().getPluginManager().registerEvents(this, ss);
-		onArmorEquipped = ss.getConfig().getConfigurationSection("onArmorEquipped");
-		onArmorDispensed = ss.getConfig().getConfigurationSection("onArmorDispensed");
-		onCreativeMode = ss.getConfig().getConfigurationSection("onCreativeMode");
-		onDamageTaken = ss.getConfig().getConfigurationSection("onDamageTaken");
-		onPlayerDeath = ss.getConfig().getConfigurationSection("onPlayerDeath");
+		this.ss = ss;
 	}
 	
 	// LISTENERS
@@ -148,7 +139,7 @@ public class Events implements Listener
 		for (Player player: loc.getWorld().getPlayers())
 		{
 			if (loc.distanceSquared(player.getLocation()) <= 4)
-				ss.func.armorCheck(player, e.getItem());
+				ss.func.armorWatch(player, e.getItem());
 		}
 	}
 	
@@ -158,7 +149,14 @@ public class Events implements Listener
 	{
 		// only when player switching to creative mode storing armor
 		if (e.getNewGameMode() == GameMode.CREATIVE)
-			ss.func.checkEquipArmor(e.getPlayer(), "FORCE", "creative");
+			ss.func.checkEquipArmor(e.getPlayer(), "FORCE", "force");
+	}
+	
+	// WHEN PLAYER DIES EQUIP ARMOR IMMEDIATELY DO DROP IT (thanks to Kaezoncito for his report)
+	@EventHandler
+	public void onPlayerDeath(PlayerDeathEvent e)
+	{
+		ss.func.checkEquipArmor(e.getEntity(), "FORCE", "force");
 	}
 	
 	// WATCH DAMAGE EVENTS BEFORE THEY OCCURS

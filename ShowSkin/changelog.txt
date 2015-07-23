@@ -1,10 +1,9 @@
 v2
 
 - enchanting levels bugfix
+- drop saved armor on all death types (ej.: drowning)
 
-v1 initial release
-
-done
+v1
 
 - read/write configuration
 - player temporary chests creation (if not exists) on player join
@@ -20,7 +19,8 @@ done
 - recalcule damage mitigation my enchantmets, falling anvil, fall damage
 - armor status messages
 
-
 todo
 
 - detect when player is looking a right-clickable block/entity
+- work with uuid to avoid armor loss/steal on player change name
+- optionally equip armor on touch water having underwater enchantments

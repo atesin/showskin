@@ -24,7 +24,7 @@ public class Functions
 	private SS ss;
 	private Location chestsLocation;
 	private List<String> players;
-	private Map<String, Object> creative = new HashMap<String, Object>();
+	private Map<String, Object> equipAction = new HashMap<String, Object>();
 	private Map<String, BukkitTask> tasks = new HashMap<String, BukkitTask>();
 	private Map<String, int[]> armorStatus = new HashMap<String, int[]>();
 	private Map<String, double[]> epfs = new HashMap<String, double[]>();
@@ -47,9 +47,9 @@ public class Functions
 			ss.getConfig().getDouble("chestsLocation.z")
 		);
 		players = ss.data.getConfig().getStringList("players");
-		creative.put("equipFor", (int) 200);
-		creative.put("equipMsg", (boolean) true);
-		creative.put("statusMsg", (boolean) false);
+		equipAction.put("equipFor", (int) 200);
+		equipAction.put("equipMsg", (boolean) true);
+		equipAction.put("statusMsg", (boolean) false);
 		epfs.put("PROTECTION_ENVIRONMENTAL", new double[]{0.04, 0.08, 0.12, 0.20});
 		epfs.put("PROTECTION_FIRE",          new double[]{0.08, 0.16, 0.24, 0.36});
 		epfs.put("PROTECTION_EXPLOSIONS",    new double[]{0.12, 0.20, 0.28, 0.44});
@@ -101,7 +101,7 @@ public class Functions
 	}
 	
 	// CHECK PLAYER ARMOR SLOTS AT INTERVALS, FOR USE WITH DISPENSER EVENTS
-	protected void armorCheck(final Player player, ItemStack armor)
+	protected void armorWatch(final Player player, ItemStack armor)
 	{
 		// view player matching slot
 		final int slot = getArmorSlot(armor);
@@ -400,7 +400,7 @@ public class Functions
 	protected Map<DamageModifier, Double> checkEquipArmor(Player player, String cause, String action, ItemStack[] suit)
 	{
 		// get action settings
-		Map<String, Object> act = action == "creative" ? creative : ss.getConfig().getConfigurationSection("actions."+action).getValues(false);
+		Map<String, Object> act = action == "force" ? equipAction : ss.getConfig().getConfigurationSection("actions."+action).getValues(false);
 
 		// get saved armor suit pieces number
 		int numPieces = suitNumPieces(suit);

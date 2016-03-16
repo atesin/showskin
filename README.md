@@ -1,6 +1,6 @@
 # INVISIBLE ARMOR
 
-Formerly "ShowSkin"
+Formerly "ShowSkin": http://dev.bukkit.org/bukkit-plugins/invisible-armor/
 
 Minecraft plugin to show your skin proudly to everyone without losing armor benefits
 

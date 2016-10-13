@@ -31,4 +31,5 @@ todo
 - update damage calculations
 - drop the need of having "physical" chests, by saving serialized items on yml
 - play a (cracking) sound alert on armor durability changes
+- add support for new 1.10.2 wearable items (elytra, dragon heads, etc.)
 

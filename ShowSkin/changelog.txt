@@ -30,4 +30,5 @@ todo
 - optionally equip armor on touch water having underwater enchantments
 - update damage calculations
 - drop the need of having "physical" chests, by saving serialized items on yml
+- play a (cracking) sound alert on armor durability changes
 

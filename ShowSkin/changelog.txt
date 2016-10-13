@@ -28,3 +28,6 @@ todo
 - detect when player is looking a right-clickable block/entity
 - work with uuid to avoid armor loss/steal on player change name
 - optionally equip armor on touch water having underwater enchantments
+- update damage calculations
+- drop the need of having "physical" chests, by saving serialized items on yml
+

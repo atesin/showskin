@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -156,7 +155,8 @@ public class Events implements Listener
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent e)
 	{
-		ss.func.checkEquipArmor(e.getEntity(), "FORCE", "force");
+		//ss.func.checkEquipArmor(e.getEntity(), "FORCE", "force");
+		ss.func.dropSuit(e.getEntity());
 	}
 	
 	// WATCH DAMAGE EVENTS BEFORE THEY OCCURS

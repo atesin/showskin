@@ -24,7 +24,7 @@ public class Functions
 	private SS ss;
 	private Location chestsLocation;
 	private List<String> players;
-	private Map<String, Object> equipAction = new HashMap<String, Object>();
+	private Map<String, Object> creativeAction = new HashMap<String, Object>();
 	private Map<String, BukkitTask> tasks = new HashMap<String, BukkitTask>();
 	private Map<String, int[]> armorStatus = new HashMap<String, int[]>();
 	private Map<String, double[]> epfs = new HashMap<String, double[]>();
@@ -47,9 +47,9 @@ public class Functions
 			ss.getConfig().getDouble("chestsLocation.z")
 		);
 		players = ss.data.getConfig().getStringList("players");
-		equipAction.put("equipFor", (int) 200);
-		equipAction.put("equipMsg", (boolean) true);
-		equipAction.put("statusMsg", (boolean) false);
+		creativeAction.put("equipFor", (int) 200);
+		creativeAction.put("equipMsg", (boolean) true);
+		creativeAction.put("statusMsg", (boolean) false);
 		epfs.put("PROTECTION_ENVIRONMENTAL", new double[]{0.04, 0.08, 0.12, 0.20});
 		epfs.put("PROTECTION_FIRE",          new double[]{0.08, 0.16, 0.24, 0.36});
 		epfs.put("PROTECTION_EXPLOSIONS",    new double[]{0.12, 0.20, 0.28, 0.44});
@@ -166,6 +166,21 @@ public class Functions
 			player.getInventory().setHelmet(null);
 		}
 		return false;
+	}
+	
+	// DROP ARMOR SUIT WHEN PLAYER DIES
+	void dropSuit(Player player)
+	{
+		// get previous
+		Location loc = player.getLocation();
+		Inventory inv = getTempInventory(player.getName());
+		
+		// loop suit to drop pieces
+		for (ItemStack piece: Arrays.copyOf(inv.getContents(), 4))
+			loc.getWorld().dropItemNaturally(loc, piece);
+		
+		// clear temp intentory
+		inv.clear();
 	}
 	
 	// GET ARMOR SLOT POSITION
@@ -400,7 +415,7 @@ public class Functions
 	protected Map<DamageModifier, Double> checkEquipArmor(Player player, String cause, String action, ItemStack[] suit)
 	{
 		// get action settings
-		Map<String, Object> act = action == "force" ? equipAction : ss.getConfig().getConfigurationSection("actions."+action).getValues(false);
+		Map<String, Object> act = action == "force" ? creativeAction : ss.getConfig().getConfigurationSection("actions."+action).getValues(false);
 
 		// get saved armor suit pieces number
 		int numPieces = suitNumPieces(suit);

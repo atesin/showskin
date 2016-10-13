@@ -1,3 +1,7 @@
+v3
+
+- fixed drop saved armor on death, now by writing a dedicated method (now works)
+
 v2
 
 - enchanting levels bugfix

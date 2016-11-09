@@ -1,3 +1,19 @@
+to do (future releases)
+
+- work internally with uuid to increase stability
+- drop the need of having "physical" chests, by saving serialized items on yml
+- play a (cracking) sound alert on armor durability changes
+- detect when player is looking a right-clickable block/entity
+- optionally equip armor on touch water having underwater enchantments
+- update damage calculations
+
+v4 (this release)
+
+- this changes thanks to JethroCraft at https://dev.bukkit.org
+- added elytra support
+- added shift-click overequipping attempt handling
+- some code cleanups and optimizations
+
 v3
 
 - fixed drop saved armor on death, now by writing a dedicated method (now works)

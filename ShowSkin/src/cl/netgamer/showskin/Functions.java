@@ -28,8 +28,8 @@ public class Functions
 	private Map<String, BukkitTask> tasks = new HashMap<String, BukkitTask>();
 	private Map<String, int[]> armorStatus = new HashMap<String, int[]>();
 	private Map<String, double[]> epfs = new HashMap<String, double[]>();
-	// §B=cyan, §E=yellow, §D=magenta
-	String[] colors = new String[]{"§D", "§E", "§B"};
+	// \u00A7B=cyan, \u00A7E=yellow, \u00A7D=magenta
+	String[] colors = new String[]{"\u00A7D", "\u00A7E", "\u00A7B"};
 	String[] pieceNames;
 	String[] pieceTitles;
 	String[] statusLines;
@@ -209,6 +209,7 @@ public class Functions
 		case "IRON_CHESTPLATE":
 		case "DIAMOND_CHESTPLATE":
 		case "GOLD_CHESTPLATE":
+		case "ELYTRA":
 			return 2;
 		case "LEATHER_HELMET":
 		case "CHAINMAIL_HELMET":
@@ -223,17 +224,20 @@ public class Functions
 		}
 	}
 	
-	// GET ITEM WEARABILITY (0: UNWEARABLE, 1: ARMOR PIECE, 2: MOB HEAD)
+	/** Check item wearability
+	 * 0: unwearable item
+	 * 1: just wearable by dragging explicitly into armor slots (e.g. mob heads)
+	 * 2: also wearable by using it (right click, shift click) or by a dispenser (e.g. normal armor)
+	 */
 	protected int getItemWearability(ItemStack wear)
 	{
-		int level = 0;
 		switch (wear.getData().getItemType().toString())
 		{
-		// heads and armor
+		// heads
 		case "PUMPKIN":
 		case "SKULL_ITEM":
-			++level;
-		// just armor
+			return 1;
+		// armor pieces
 		case "LEATHER_BOOTS":
 		case "CHAINMAIL_BOOTS":
 		case "IRON_BOOTS":
@@ -254,9 +258,11 @@ public class Functions
 		case "IRON_HELMET":
 		case "DIAMOND_HELMET":
 		case "GOLD_HELMET":
-			++level;;
+		case "ELYTRA":
+			return 2;
 		}
-		return level;
+		// not equippable as armor
+		return 0;
 	}
 	
 	// GET ARMOR VALUE OF GIVEN ARMOR SUIT
@@ -382,7 +388,7 @@ public class Functions
 
 		// display unequip message?
 		if ((boolean)act.get("equipMsg"))
-			player.sendMessage("§B"+ss.getConfig().getString("lang.saveArmor"));
+			player.sendMessage("\u00A7B"+ss.getConfig().getString("lang.saveArmor"));
 		
 		// display status messages
 		if ((boolean)act.get("statusMsg"))
@@ -518,7 +524,7 @@ public class Functions
 				
 				// display equip message if worths
 				if ((boolean)act.get("equipMsg"))
-					player.sendMessage("§B"+ss.getConfig().getString("lang.equipArmor"));
+					player.sendMessage("\u00A7B"+ss.getConfig().getString("lang.equipArmor"));
 			}
 		}
 			

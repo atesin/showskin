@@ -48,12 +48,13 @@ public class Events implements Listener
 	public void onInventoryClick(InventoryClickEvent e)
 	{
 		// just for players, players cant click on other players inventory
-		if (!(e.getInventory().getHolder() instanceof Player))
-			return;
+		// not needed, this event are only fired by players
+		//if (!(e.getWhoClicked() instanceof Player))
+		//	return;
 		
 		// creative has a weird inventory and no armor need
 		// check if player is creative or has stored armor
-		Player player = (Player) e.getInventory().getHolder();
+		Player player = (Player) e.getWhoClicked();
 		if (player.getGameMode() == GameMode.CREATIVE || ss.func.suitNumPieces(player.getName()) == 0)
 			return;
 		
@@ -63,14 +64,14 @@ public class Events implements Listener
 		{
 		case "CONTAINER":
 		case "QUICKBAR":
-			// player shift clicked an armor item (except pumpkin or mob head)
+			// player "used" an armor item (except "heads")
 			if (e.getClick().isShiftClick())
-				// check item wear level
-				if (ss.func.getItemWearability(e.getCurrentItem()) == 1)
+				// if item is wearable by shift click then continue
+				if (ss.func.getItemWearability(e.getCurrentItem()) > 1)
 					break;
 			return;
 		case "ARMOR":
-			// check cursor item wear level
+			// if item is wearable by dragging then continue
 			if (ss.func.getItemWearability(e.getCursor()) > 0)
 				break;
 		default:
@@ -96,8 +97,8 @@ public class Events implements Listener
 		if (!e.hasItem()) 
 			return;
 		
-		// item is not wearable by shift click (is not an armor)
-		if (ss.func.getItemWearability(e.getItem()) != 1)
+		// item is not wearable by shift click (is not an armor piece)
+		if (ss.func.getItemWearability(e.getItem()) < 2)
 			return;
 		
 		// pending: if player is in front of a block/entity that can be right clicked
@@ -129,8 +130,8 @@ public class Events implements Listener
 		 * dispenser does not dispense pumpkins or mob heads
 		 */
 		
-		// is armor item?
-		if (ss.func.getItemWearability(e.getItem()) != 1)
+		// item is not wearable by a dispenser (is not an armor piece)
+		if (ss.func.getItemWearability(e.getItem()) < 2)
 			return;
 		
 		// find and watch nerby players

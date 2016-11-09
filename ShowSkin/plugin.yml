@@ -1,6 +1,6 @@
 name: InvisibleArmor
 main: cl.netgamer.showskin.SS
-version: 3
+version: 4
 
 commands:
    showskin:

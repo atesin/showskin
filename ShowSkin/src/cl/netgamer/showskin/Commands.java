@@ -30,7 +30,7 @@ public class Commands implements CommandExecutor
 		
 		// no online player that need to show his skin
 		if (!(sender instanceof Player))
-			sender.sendMessage("§DMust be an online Player");
+			sender.sendMessage("\u00A7DMust be an online Player");
 		
 		// creative mode is blocked to avoid different shape inventory bugs, no needed anyway
 		Player player = (Player) sender;

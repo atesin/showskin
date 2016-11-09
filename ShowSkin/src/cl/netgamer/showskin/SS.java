@@ -5,14 +5,14 @@ import java.util.logging.Logger;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import cl.netgamer.showskin.ConfigAccesor;
+import cl.netgamer.showskin.ConfigAccessor;
 import cl.netgamer.showskin.Commands;
 
 public class SS extends JavaPlugin
 {
 	// PROPERTIES
 	private Logger logger = getLogger();
-	protected ConfigAccesor data;
+	protected ConfigAccessor data;
 	protected ConfigurationSection actions;
 	protected Functions func;
 	
@@ -27,7 +27,7 @@ public class SS extends JavaPlugin
 	{
 		// create a star hierarchy where plugin is the center
 		this.saveDefaultConfig();
-		data = new ConfigAccesor(this, "data.yml");
+		data = new ConfigAccessor(this, "data.yml");
 		data.saveDefaultConfig();
 		func = new Functions(this);
 		new Events(this);

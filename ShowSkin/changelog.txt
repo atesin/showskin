@@ -9,9 +9,9 @@ to do (future releases)
 
 v4 (this release)
 
-- this changes thanks to JethroCraft at https://dev.bukkit.org
+- this changes thanks to JethroCraft from BukkitDev
 - added elytra support
-- added shift-click overequipping attempt handling
+- added better shift-click overequipping attempt handling
 - some code cleanups and optimizations
 
 v3

@@ -209,7 +209,7 @@ public class Functions
 		case "IRON_CHESTPLATE":
 		case "DIAMOND_CHESTPLATE":
 		case "GOLD_CHESTPLATE":
-		case "ELYTRA":
+		//case "ELYTRA":
 			return 2;
 		case "LEATHER_HELMET":
 		case "CHAINMAIL_HELMET":
@@ -258,7 +258,7 @@ public class Functions
 		case "IRON_HELMET":
 		case "DIAMOND_HELMET":
 		case "GOLD_HELMET":
-		case "ELYTRA":
+		//case "ELYTRA":
 			return 2;
 		}
 		// not equippable as armor

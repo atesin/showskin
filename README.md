@@ -6,6 +6,6 @@ Minecraft plugin to show your skin proudly to everyone without losing armor bene
 
 - your armor is taken away and kept in a safe place in the world
 - if some damage occurs that armor can mitigate, it is worn briefly and stored again
-- damage mitigations are recalculated (HideArmor doesnt)
+- damage mitigations are recalculated (HideArmor doesnt, you got full damage as if you were naked)
 
-this plugin is under development and have no bukkit project page yet, see "changelog.txt" file inside source
+this plugin is under constant development, see "changelog.txt" file inside source
